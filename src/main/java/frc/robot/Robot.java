@@ -8,6 +8,25 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
+// Added Imports
+
+import edu.wpi.first.wpilibj.motorcontrol.Spark;
+import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.Timer;
+
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.spark.SparkLowLevel.MotorType;//used for follow() method
+
+import javax.lang.model.util.ElementScanner14;
+import com.ctre.phoenix.motorcontrol.ControlMode;  //black VEX pro motor controler
+import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;  //black VEX pro motor controler
+
+
 /**
  * The methods in this class are called automatically corresponding to each mode, as described in
  * the TimedRobot documentation. If you change the name of this class or the package after creating
@@ -15,9 +34,20 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  */
 public class Robot extends TimedRobot {
   private static final String kDefaultAuto = "Default";
-  private static final String kCustomAuto = "My Auto";
+  private static final String kCenterCoral = "Center and Coral";
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
+
+  private final SparkMax leftLeader = new SparkMax(1, MotorType.kBrushed);
+  private final SparkMax leftFollower = new SparkMax(2, MotorType.kBrushed);
+  private final SparkMax rightLeader = new SparkMax(3, MotorType.kBrushed);
+  private final SparkMax rightFollower = new SparkMax(4, MotorType.kBrushed);
+
+  private final DifferentialDrive myDrive = new DifferentialDrive(leftLeader,rightLeader); 
+
+  private final SparkMaxConfig driveConfig = new SparkMaxConfig();
+
+  private final Timer timer1 = new Timer();
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -25,8 +55,26 @@ public class Robot extends TimedRobot {
    */
   public Robot() {
     m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
-    m_chooser.addOption("My Auto", kCustomAuto);
+    m_chooser.addOption("Center and Coral", kCenterCoral);
     SmartDashboard.putData("Auto choices", m_chooser);
+
+    driveConfig.smartCurrentLimit(60);
+    driveConfig.voltageCompensation(12);
+
+    driveConfig.follow(leftLeader);
+    leftFollower.configure(driveConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+    driveConfig.follow(rightLeader);
+    rightFollower.configure(driveConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+    driveConfig.disableFollowerMode();
+    rightLeader.configure(driveConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+    driveConfig.inverted(true);
+    leftLeader.configure(driveConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+    timer1.start();
+
   }
 
   /**
@@ -54,18 +102,23 @@ public class Robot extends TimedRobot {
     m_autoSelected = m_chooser.getSelected();
     // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
     System.out.println("Auto selected: " + m_autoSelected);
+    timer1.restart();
   }
 
   /** This function is called periodically during autonomous. */
   @Override
   public void autonomousPeriodic() {
     switch (m_autoSelected) {
-      case kCustomAuto:
-        // Put custom auto code here
+      case kCenterCoral:
+        // Custom auto code here
+        // drive forward to reef
+        // stop and deposit coral
+        // stop everything
         break;
       case kDefaultAuto:
       default:
-        // Put default auto code here
+        //Default code here
+        
         break;
     }
   }
@@ -78,7 +131,7 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {}
 
-  /** This function is called once when the robot is disabled. */
+  /** This function is called once when the robot is -abled. */
   @Override
   public void disabledInit() {}
 
