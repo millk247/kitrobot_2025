@@ -55,6 +55,10 @@ public class Robot extends TimedRobot {
   private final Timer timer1 = new Timer();
 
   private final double ROLLER_EJECT_VALUE = 0.44;
+  private double drivespeed = 1;
+
+  private final XboxController gamepad0 = new XboxController(0);
+  private final XboxController gamepad1 = new XboxController(1);
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -156,7 +160,7 @@ public class Robot extends TimedRobot {
         else{
           myDrive.tankDrive(0, 0);
         }
-        
+
         break;
 
       case kDefaultAuto:
@@ -174,7 +178,16 @@ public class Robot extends TimedRobot {
 
   /** This function is called periodically during operator control. */
   @Override
-  public void teleopPeriodic() {}
+  public void teleopPeriodic() {
+    if(gamepad0.getLeftBumperButton() == true) {
+      drivespeed = 2;
+    }
+    if(gamepad0.getRightBumperButton() == true) {
+      drivespeed = 1;
+    }
+
+    myDrive.arcadeDrive(-gamepad0.getLeftY()/drivespeed, -gamepad0.getRightX()/drivespeed);
+  }
 
   /** This function is called once when the robot is -abled. */
   @Override
