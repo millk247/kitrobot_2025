@@ -36,8 +36,11 @@ import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;  //black VEX pro motor c
 public class Robot extends TimedRobot {
   private static final String kDefaultAuto = "Default";
   private static final String kCenterCoral = "Center and Coral";
+  private static final String kJustDrive = "Just Drive";
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
+
+  private final SparkMax rollerMotor = new SparkMax(5, MotorType.kBrushed);
 
   private final SparkMax leftLeader = new SparkMax(1, MotorType.kBrushed);
   private final SparkMax leftFollower = new SparkMax(2, MotorType.kBrushed);
@@ -47,8 +50,11 @@ public class Robot extends TimedRobot {
   private final DifferentialDrive myDrive = new DifferentialDrive(leftLeader,rightLeader); 
 
   private final SparkMaxConfig driveConfig = new SparkMaxConfig();
+  private final SparkMaxConfig rollerConfig = new SparkMaxConfig();
 
   private final Timer timer1 = new Timer();
+
+  private final double ROLLER_EJECT_VALUE = 0.44;
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -57,6 +63,7 @@ public class Robot extends TimedRobot {
   public Robot() {
     m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
     m_chooser.addOption("Center and Coral", kCenterCoral);
+    m_chooser.addOption("Just Drive", kJustDrive);
     SmartDashboard.putData("Auto choices", m_chooser);
 
     driveConfig.smartCurrentLimit(60);
@@ -73,6 +80,10 @@ public class Robot extends TimedRobot {
 
     driveConfig.inverted(true);
     leftLeader.configure(driveConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+    rollerConfig.smartCurrentLimit(60);
+    rollerConfig.voltageCompensation(10);
+    rollerMotor.configure(rollerConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
     timer1.start();
 
@@ -113,14 +124,47 @@ public class Robot extends TimedRobot {
       case kCenterCoral:
         // Custom auto code here
         // drive forward to reef
+        if(timer1.get() < 1.85) {
+          myDrive.tankDrive(.5, .5);
+        }
+
+        else if (timer1.get() > 3) {
+          myDrive.tankDrive(0, 0);
+        }
+
         // stop and deposit coral
+
+        else if(timer1.get() < 5.5) {
+          myDrive.tankDrive(0, 0);
+          rollerMotor.set(ROLLER_EJECT_VALUE);
+        }
+
         // stop everything
+
+        else {
+          myDrive.tankDrive(0, 0);
+          rollerMotor.set(0);
+        }
+
         break;
+
+      case kJustDrive: 
+        if(timer1.get() < .9){
+          myDrive.tankDrive(.5, .5);
+        }
+
+        else{
+          myDrive.tankDrive(0, 0);
+        }
+        
+        break;
+
       case kDefaultAuto:
       default:
         //Default code here
         
         break;
+
     }
   }
 
