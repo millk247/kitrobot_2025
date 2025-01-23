@@ -56,6 +56,7 @@ public class Robot extends TimedRobot {
 
   private final double ROLLER_EJECT_VALUE = 0.44;
   private double drivespeed = 1;
+  private double rollerOut = 0;
 
   private final XboxController gamepad0 = new XboxController(0);
   private final XboxController gamepad1 = new XboxController(1);
@@ -187,6 +188,31 @@ public class Robot extends TimedRobot {
     }
 
     myDrive.arcadeDrive(-gamepad0.getLeftY()/drivespeed, -gamepad0.getRightX()/drivespeed);
+
+    if(gamepad1.getAButton()) {
+      rollerOut = ROLLER_EJECT_VALUE;
+    }
+
+    // experimental code (actual buttons to control roller speed)
+
+    if(gamepad1.getBButton()) {
+      rollerOut = 1;
+    }
+    if(gamepad1.getXButton()) {
+      rollerOut = 0.75;
+    }
+    if (gamepad1.getYButton()){
+      rollerOut = 0.20;
+    }
+    // experimental code ends here
+
+      else {
+    // rollerOut = -gamepad1.getLeftY();
+    // above to manually control roller using the stick
+    // below to use axis to control roller
+    // rollerOut = gamepad1.getRightTriggerAxis() - gamepad1.getLeftTriggerAxis();
+    }
+    rollerMotor.set(rollerOut);
   }
 
   /** This function is called once when the robot is -abled. */
